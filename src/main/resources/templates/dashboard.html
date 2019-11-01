@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" ng-app="todoApp">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>To-Do List</title>
+
+    <link data-th-href="@{/webjars/bulma/0.7.5/css/bulma.css}" rel="stylesheet">
+    <link rel="stylesheet" data-th-href="@{/webjars/font-awesome/4.7.0/css/font-awesome.min.css}"/>
+    <script data-th-src="@{/webjars/momentjs/2.24.0/moment.js}"></script>
+    <script data-th-src="@{/webjars/angularjs/1.7.8/angular.js}"></script>
+    <script src="todo.js"></script>
+</head>
+<body>
+<section class="hero is-primary is-bold">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">
+                <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;To-Do List
+            </h1>
+        </div>
+    </div>
+</section>
+<section class="section">
+    <div class="container" ng-controller="TodoListController as todoList">
+        <article ng-show="todoList.error.show"  class="message is-danger">
+            <div class="message-header">
+                <p>Error</p>
+                <button class="delete" aria-label="close" ng-click="todoList.error.show=false"></button>
+            </div>
+            <div class="message-body">
+                {{todoList.error.message}}
+            </div>
+        </article>
+        <div>
+            <form name="addTodoForm">
+                <div class="columns">
+                    <div class="column">
+                        <input class="input" type="text" placeholder="New task" ng-model="newTodo" required>
+                    </div>
+                    <div class="column">
+                        <div class="select">
+                            <select ng-model="newCategory"
+                                    ng-options="category as category.category for category in todoList.categories track by category.category"
+                                    ng-change="!newCategories.includes(newCategory.category) && newCategories.push(newCategory.category);
+                                                newCategory=null;">
+                                <option value="" selected disabled hidden>Add Category</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="column" ng-init="newCategories=[]">
+                        <span ng-repeat="category in newCategories">
+                            <span class="tag is-success">
+                                  {{category}}
+                                  <button class="delete is-small"
+                                          ng-click="newCategories.splice(newCategories.indexOf(category),1)"></button>
+                            </span>&nbsp
+                        </span>
+                    </div>
+                    <div class="column">
+                        <button class="button is-primary" ng-click="todoList.saveNewTask({title:newTodo,categories: newCategories})">Add Task</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <table class="table is-hoverable is-fullwidth">
+            <thead>
+                <th aria-label="Completed"></th>
+                <th ng-click="todoList.sort('title')">ToDo
+                    <i ng-show="todoList.sortBy == 'title'" class="{{todoList.reverse?'fa fa-sort-asc':'fa fa-sort-desc'}}" aria-hidden="true"></i>
+                </th>
+                <th>Category
+                    <div class="dropdown is-active" ng-class="todoList.active">
+                    <div class="dropdown-trigger">
+
+                            <i class="fa fa-filter" ng-init="showFilter = false" ng-click="todoList.showFilter = !showFilter"></i>
+
+                    </div>
+                    <div class="dropdown-menu" id="filterMenu" role="menu" ng-show="todoList.showFilter" >
+                        <div class="dropdown-content">
+                            <div class="dropdown-item">
+                                <p>Filer by:</p>
+                                <p ng-repeat="category in todoList.categories">
+                                    <span class="tag is-success" ng-click="todoList.showFilter=false;todoList.filterByCategory(category.category);">
+                                          {{category.category}}
+                                    </span>
+                                </p>
+                            </div>
+                            <hr class="dropdown-divider">
+                            <div class="dropdown-item">
+                                <button ng-click="todoList.getRemainingTodos();todoList.showFilter=false;">Reset filter.</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </th>
+                <th ng-click="todoList.sort('createDate')">Created
+                    <i ng-show="todoList.sortBy == 'createDate'" class="{{todoList.reverse?'fa fa-sort-asc':'fa fa-sort-desc'}}" aria-hidden="true"></i>
+                </th>
+            </thead>
+            <tbody>
+            <tr ng-repeat="todo in todoList.todos | orderBy:todoList.sortBy:todoList.reverse">
+                <td><button class="button is-primary" ng-click="todoList.completeToDo(todo.id)">Complete</button></td>
+                <td>{{todo.title}}</td>
+                <td>
+                    <span ng-repeat="category in todo.categories">
+                        <span class="tag is-success">
+                          {{category.category}}
+                        </span>&nbsp
+                    </span>
+                </td>
+                <td>
+                   {{todo.createDate | fromNow}}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</body>
+</html>
